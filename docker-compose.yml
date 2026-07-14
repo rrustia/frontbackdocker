@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: taskboard_postgres
+    environment:
+      POSTGRES_DB: taskboard
+      POSTGRES_USER: taskboard
+      POSTGRES_PASSWORD: taskboard
+    volumes:
+      - taskboard_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taskboard -d taskboard"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./api
+    container_name: taskboard_api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://taskboard:taskboard@postgres:5432/taskboard
+      # I allow frontend requests from the web container and local browser.
+      CORS_ORIGINS: http://localhost:8080
+      JWT_SECRET_KEY: local-dev-secret-key
+      JWT_EXPIRE_MINUTES: "120"
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: admin123
+    ports:
+      - "8000:8000"
+
+  web:
+    build:
+      context: ./web
+    container_name: taskboard_web
+    depends_on:
+      - api
+    ports:
+      - "8080:80"
+
+volumes:
+  taskboard_pgdata:

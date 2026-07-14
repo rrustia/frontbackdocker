@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TaskBoard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <header class="hero">
+        <p class="eyebrow">Shipping Console</p>
+        <h1>TaskBoard</h1>
+        <p class="tagline">
+          Keep day-to-day delivery work visible without dragging in a heavy project management stack.
+        </p>
+      </header>
+
+      <section class="panel form-panel">
+        <h2>Authentication</h2>
+        <form id="login-form" class="login-form">
+          <div class="row">
+            <label>
+              Username
+              <input id="login-username" name="username" type="text" value="admin" required />
+            </label>
+
+            <label>
+              Password
+              <input id="login-password" name="password" type="password" value="admin123" required />
+            </label>
+          </div>
+
+          <div class="row login-actions">
+            <button type="submit">Log in</button>
+            <button id="logout-button" type="button" class="ghost">Log out</button>
+          </div>
+        </form>
+        <p id="auth-status" class="auth-status">Not authenticated.</p>
+      </section>
+
+      <section class="panel form-panel">
+        <h2>Create Task</h2>
+        <form id="task-form">
+          <label>
+            Title
+            <input id="title" name="title" type="text" minlength="3" required />
+          </label>
+
+          <label>
+            Description
+            <textarea id="description" name="description" rows="3"></textarea>
+          </label>
+
+          <div class="row">
+            <label>
+              Priority
+              <select id="priority" name="priority">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+              </select>
+            </label>
+
+            <label>
+              Due date
+              <input id="due_date" name="due_date" type="date" />
+            </label>
+          </div>
+
+          <button type="submit">Add task</button>
+        </form>
+      </section>
+
+      <section class="panel list-panel">
+        <div class="list-header">
+          <h2>Current Tasks</h2>
+          <label>
+            Filter
+            <select id="status-filter">
+              <option value="">All</option>
+              <option value="todo">Todo</option>
+              <option value="in_progress">In progress</option>
+              <option value="done">Done</option>
+            </select>
+          </label>
+        </div>
+
+        <div id="task-list" class="task-list"></div>
+      </section>
+    </main>
+
+    <template id="task-card-template">
+      <article class="task-card">
+        <div class="task-main">
+          <h3 class="task-title"></h3>
+          <p class="task-description"></p>
+          <p class="task-meta"></p>
+        </div>
+
+        <div class="task-actions">
+          <select class="status-select">
+            <option value="todo">Todo</option>
+            <option value="in_progress">In progress</option>
+            <option value="done">Done</option>
+          </select>
+          <button class="delete-button" type="button">Delete</button>
+        </div>
+      </article>
+    </template>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
