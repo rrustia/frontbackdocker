@@ -1,8 +1,13 @@
 # TaskBoard (Docker + API + Tests + Web UI)
 
-I am a small but practical project you can use to learn a modern backend + frontend + Docker workflow.
+The project is a small but practical task board for learning a modern backend, frontend, and Docker workflow.
 
-What I include:
+Project note:
+- Purpose: It shows how the API, web UI, database, and tests fit together.
+- Input: Docker Compose, API requests, and local test commands.
+- Output: A running task board app, test results, and a clear setup path.
+
+What it includes:
 - FastAPI backend
 - JWT login/auth
 - PostgreSQL database
@@ -12,7 +17,7 @@ What I include:
 
 ## 1) Technologies Used
 
-I use the following technologies in this project:
+The project uses the following technologies:
 
 ### Backend
 - Python 3.12+ (app runtime in Docker image)
@@ -58,27 +63,27 @@ I use the following technologies in this project:
 - Username: `admin`
 - Password: `admin123`
 
-You can change these values in `docker-compose.yml`:
+The default values can be changed in `docker-compose.yml`:
 - `ADMIN_USERNAME`
 - `ADMIN_PASSWORD`
 
 ## 4) Fast Start (Docker)
 
-From the project root, run:
+From the project root, this command starts the stack:
 
 ```bash
 docker compose up --build
 ```
 
-Then open:
+Then open the following:
 - API docs: http://localhost:8000/docs
 - Web app: http://localhost:8080
 
-If Docker daemon is not running, start Docker Desktop (or Colima) first.
+If the Docker daemon is not running, Docker Desktop (or Colima) should be started first.
 
 ## 5) Beginner-Friendly Test Checklist (All Functionalities)
 
-I recommend using this checklist to test every major feature.
+The checklist below covers every major feature.
 
 ### A) Health Check
 
@@ -86,7 +91,7 @@ I recommend using this checklist to test every major feature.
 curl http://localhost:8000/health
 ```
 
-Expected:
+Expected output:
 - HTTP 200
 - Body: `{"status":"ok"}`
 
@@ -102,7 +107,7 @@ Expected:
 - HTTP 200
 - JSON includes `access_token`
 
-Save token to a shell variable:
+The token can be saved to a shell variable:
 
 ```bash
 TOKEN=$(curl -s -X POST http://localhost:8000/auth/login \
@@ -113,12 +118,12 @@ TOKEN=$(curl -s -X POST http://localhost:8000/auth/login \
 ### C) Current User Endpoint
 
 ```bash
-curl -H "Authorization: Bearer $TOKEN" http://localhost:8000/auth/me
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8000/auth/current-user
 ```
 
-Expected:
+Expected output:
 - HTTP 200
-- Body includes your username (`admin`)
+- Body includes the username (`admin`)
 
 ### D) Unauthorized Access Should Fail
 
@@ -145,7 +150,7 @@ curl -X POST http://localhost:8000/tasks \
 
 Expected:
 - HTTP 201
-- Response has task id and your task data
+- Response includes the task id and submitted task data
 
 ### F) List Tasks
 
@@ -169,7 +174,7 @@ Expected:
 
 ### H) Update Task Status
 
-Replace `1` with your task id.
+Replace `1` with the task id for the task.
 
 ```bash
 curl -X PATCH http://localhost:8000/tasks/1 \
@@ -178,13 +183,13 @@ curl -X PATCH http://localhost:8000/tasks/1 \
   -d '{"status":"in_progress"}'
 ```
 
-Expected:
+Expected output:
 - HTTP 200
 - `status` changed to `in_progress`
 
-### I) Delete Task
+### Delete Task
 
-Replace `1` with your task id.
+Replace `1` with the task id for the task.
 
 ```bash
 curl -X DELETE http://localhost:8000/tasks/1 \
@@ -199,12 +204,12 @@ Expected:
 1. Open http://localhost:8080
 2. Log in with `admin` / `admin123`
 3. Create a task in the form
-4. Change status from dropdown
+4. Change the status from the dropdown
 5. Filter by status
 6. Delete a task
 
-Expected:
-- Data updates immediately in the page
+Expected output:
+- The page updates immediately
 - API actions succeed without page reload errors
 
 ## 6) Run Automated Tests
@@ -226,7 +231,7 @@ python3 -m venv .venv
 Current test coverage includes:
 - health endpoint
 - auth login success/failure
-- auth me success/failure
+- auth current-user success/failure
 - unauthorized access protection
 - task create/list/filter/update/delete
 - request validation

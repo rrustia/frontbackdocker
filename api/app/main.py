@@ -14,7 +14,7 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# I normalize comma-separated CORS origins from env to keep deployment config simple.
+# Comma-separated CORS origins are normalized from env to keep deployment config simple.
 cors_origins_raw = os.getenv("CORS_ORIGINS", "http://localhost:8080")
 cors_origins = [origin.strip() for origin in cors_origins_raw.split(",") if origin.strip()]
 
@@ -29,21 +29,31 @@ app.add_middleware(
 
 @app.on_event("startup")
 def on_startup() -> None:
-    """I create tables automatically for local and Docker convenience.
+    """Creates the database tables when the app starts.
 
-    In production, I would usually replace this with migrations.
+    Input: No request data; it runs at startup.
+    Output: Leaves the tables ready before the API handles traffic.
     """
     Base.metadata.create_all(bind=engine)
 
 
 @app.get("/health")
 def health_check() -> dict[str, str]:
+    """Reports that the API is alive.
+
+    Input: No request data.
+    Output: Returns a simple status payload.
+    """
     return {"status": "ok"}
 
 
 @app.post("/auth/login", response_model=schemas.TokenOut)
 def login(payload: schemas.LoginRequest) -> schemas.TokenOut:
-    """I issue a JWT after validating username/password credentials."""
+    """Checks login details and returns a token.
+
+    Input: A username and password payload.
+    Output: Returns a JWT when the credentials are valid.
+    """
     if not authenticate_user(payload.username, payload.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
@@ -51,8 +61,13 @@ def login(payload: schemas.LoginRequest) -> schemas.TokenOut:
     return schemas.TokenOut(access_token=token)
 
 
-@app.get("/auth/me", response_model=schemas.AuthUserOut)
-def me(current_username: str = Depends(get_current_username)) -> schemas.AuthUserOut:
+@app.get("/auth/current-user", response_model=schemas.AuthUserOut)
+def current_user(current_username: str = Depends(get_current_username)) -> schemas.AuthUserOut:
+    """Returns the authenticated user's name.
+
+    Input: A valid bearer token comes through the dependency.
+    Output: Returns the current username.
+    """
     return schemas.AuthUserOut(username=current_username)
 
 
@@ -62,6 +77,11 @@ def list_tasks(
     db: Session = Depends(get_db),
     current_username: str = Depends(get_current_username),
 ) -> list[schemas.TaskOut]:
+    """Lists tasks for the signed-in user.
+
+    Input: An optional status filter and the active database session.
+    Output: Returns a list of task records.
+    """
     return crud.list_tasks(db, status=status_filter)
 
 
@@ -71,6 +91,11 @@ def create_task(
     db: Session = Depends(get_db),
     current_username: str = Depends(get_current_username),
 ) -> schemas.TaskOut:
+    """Creates a new task record.
+
+    Input: Task details and a database session.
+    Output: Returns the saved task.
+    """
     return crud.create_task(db, payload)
 
 
@@ -81,6 +106,11 @@ def patch_task(
     db: Session = Depends(get_db),
     current_username: str = Depends(get_current_username),
 ) -> schemas.TaskOut:
+    """Updates one task when it exists.
+
+    Input: A task id, partial task data, and a database session.
+    Output: Returns the updated task, or raises a 404 error if the task is missing.
+    """
     task = crud.get_task(db, task_id)
     if task is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
@@ -94,6 +124,11 @@ def remove_task(
     db: Session = Depends(get_db),
     current_username: str = Depends(get_current_username),
 ) -> Response:
+    """Deletes one task when it exists.
+
+    Input: A task id and a database session.
+    Output: Returns no content after the delete succeeds, or raises a 404 error if the task is missing.
+    """
     task = crud.get_task(db, task_id)
     if task is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")

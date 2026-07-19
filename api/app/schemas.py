@@ -3,7 +3,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-# I use literal values so invalid statuses fail fast during request validation.
+# Literal values keep invalid statuses from slipping through request validation.
 TaskStatus = Literal["todo", "in_progress", "done"]
 TaskPriority = Literal["low", "medium", "high"]
 
@@ -17,7 +17,7 @@ class TaskCreate(BaseModel):
 
 
 class TaskUpdate(BaseModel):
-    # I keep fields optional so PATCH requests can send partial updates.
+    # Optional fields let PATCH requests send partial updates.
     title: str | None = Field(default=None, min_length=3, max_length=200)
     description: str | None = Field(default=None, max_length=5000)
     status: TaskStatus | None = None

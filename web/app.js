@@ -6,28 +6,43 @@ const loginForm = document.querySelector("#login-form");
 const logoutButton = document.querySelector("#logout-button");
 const authStatus = document.querySelector("#auth-status");
 
-// I route all API calls through the Nginx reverse proxy so frontend stays origin-safe.
+// All API calls are routed through the Nginx reverse proxy so the frontend stays origin-safe.
 const API_BASE = "/api";
 const TOKEN_STORAGE_KEY = "taskboard.token";
 
 function getToken() {
+  // Pulls the saved token from browser storage.
+  // Input: None.
+  // Output: Returns the stored token string or null.
   return localStorage.getItem(TOKEN_STORAGE_KEY);
 }
 
 function setToken(token) {
+  // Saves the active token in browser storage.
+  // Input: One token string.
+  // Output: Keeps the token ready for later requests.
   localStorage.setItem(TOKEN_STORAGE_KEY, token);
 }
 
 function clearToken() {
+  // Removes the saved token from browser storage.
+  // Input: None.
+  // Output: Clears the stored token.
   localStorage.removeItem(TOKEN_STORAGE_KEY);
 }
 
 function updateAuthStatus(message, isError = false) {
+  // Updates the login status text in the page.
+  // Input: A message string and an optional error flag.
+  // Output: Changes the status label in the UI.
   authStatus.textContent = message;
   authStatus.style.color = isError ? "#b42318" : "#36554f";
 }
 
 async function apiRequest(path, options = {}) {
+  // Sends an authenticated request to the API.
+  // Input: An API path and fetch options.
+  // Output: Returns parsed JSON, null for no content, or throws an error.
   const token = getToken();
   const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
 
@@ -53,6 +68,9 @@ async function apiRequest(path, options = {}) {
 }
 
 async function login(username, password) {
+  // Logs the user in and stores the returned token.
+  // Input: A username and password string.
+  // Output: Saves the token and updates the auth status text.
   const response = await fetch(`${API_BASE}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -70,6 +88,9 @@ async function login(username, password) {
 }
 
 function formatDate(raw) {
+  // Formats a due date for display in the task card.
+  // Input: A raw date string or a missing value.
+  // Output: Returns a human-readable date label.
   if (!raw) {
     return "No due date";
   }
@@ -79,6 +100,9 @@ function formatDate(raw) {
 }
 
 function renderTaskCard(task) {
+  // Builds one task card and wires its actions.
+  // Input: One task object from the API.
+  // Output: Returns a DOM fragment ready to append to the list.
   const fragment = cardTemplate.content.cloneNode(true);
 
   const card = fragment.querySelector(".task-card");
@@ -93,6 +117,9 @@ function renderTaskCard(task) {
   meta.textContent = `Priority: ${task.priority} | Due: ${formatDate(task.due_date)}`;
   statusSelect.value = task.status;
 
+  // Saves the new status when the dropdown changes.
+  // Input: The selected status value from the card.
+  // Output: The task is updated, then the list is refreshed.
   statusSelect.addEventListener("change", async () => {
     try {
       await apiRequest(`/tasks/${task.id}`, {
@@ -105,6 +132,9 @@ function renderTaskCard(task) {
     }
   });
 
+  // Deletes the task after the user confirms the action.
+  // Input: A click on the delete button.
+  // Output: The card is removed, or an error alert appears.
   deleteButton.addEventListener("click", async () => {
     const approved = confirm(`Delete task "${task.title}"?`);
     if (!approved) {
@@ -126,6 +156,9 @@ function renderTaskCard(task) {
 }
 
 function renderEmptyState() {
+  // Shows the empty-state message in the task list.
+  // Input: None.
+  // Output: Replaces the list with one empty-state element.
   taskList.innerHTML = "";
   const empty = document.createElement("div");
   empty.className = "empty-state";
@@ -134,6 +167,9 @@ function renderEmptyState() {
 }
 
 async function refreshTasks() {
+  // Reloads tasks from the API and redraws the list.
+  // Input: The current status filter from the page.
+  // Output: Updates the task list with matching tasks.
   const params = new URLSearchParams();
   if (statusFilter.value) {
     params.set("status", statusFilter.value);
@@ -153,6 +189,9 @@ async function refreshTasks() {
   }
 }
 
+// Handles login submissions and reloads the list after success.
+// Input: A form submit event with username and password values.
+// Output: Saves a token, updates the page, or shows an error.
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
@@ -168,12 +207,18 @@ loginForm.addEventListener("submit", async (event) => {
   }
 });
 
+// Handles logout clicks and clears the current session state.
+// Input: A click on the logout button.
+// Output: The saved token is cleared and the empty state returns.
 logoutButton.addEventListener("click", () => {
   clearToken();
   updateAuthStatus("Logged out.");
   renderEmptyState();
 });
 
+// Handles new task submissions and refreshes the board.
+// Input: A form submit event with task details.
+// Output: Creates a task, resets the form, and redraws the list.
 taskForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
@@ -197,11 +242,17 @@ taskForm.addEventListener("submit", async (event) => {
   }
 });
 
+// Refreshes the board when the status filter changes.
+// Input: A filter selection change.
+// Output: The task list is reloaded for the new filter.
 statusFilter.addEventListener("change", () => {
   refreshTasks().catch((error) => alert(error.message));
 });
 
 if (getToken()) {
+  // Restores the saved session on page load.
+  // Input: A token already stored in browser storage.
+  // Output: The auth label and task list are restored.
   updateAuthStatus("Authenticated using saved token.");
   refreshTasks().catch((error) => {
     taskList.innerHTML = "";

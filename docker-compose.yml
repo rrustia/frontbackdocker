@@ -23,7 +23,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql+psycopg://taskboard:taskboard@postgres:5432/taskboard
-      # I allow frontend requests from the web container and local browser.
+      # Frontend requests from the web container and local browser are allowed.
       CORS_ORIGINS: http://localhost:8080
       JWT_SECRET_KEY: local-dev-secret-key
       JWT_EXPIRE_MINUTES: "120"

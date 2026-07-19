@@ -9,8 +9,8 @@ from sqlalchemy.pool import StaticPool
 from app.db import Base, get_db
 from app.main import app
 
-# I use one in-memory SQLite DB for the whole test process.
-# I use StaticPool so every test session points to the same transient database.
+# One in-memory SQLite DB handles the whole test process.
+# StaticPool keeps every test session pointed at the same transient database.
 TEST_DB_URL = "sqlite://"
 engine = create_engine(
     TEST_DB_URL,
@@ -22,13 +22,22 @@ TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 @pytest.fixture(autouse=True)
 def clean_database() -> Generator[None, None, None]:
-    """I recreate schema per test so runs stay isolated and deterministic."""
+    """Resets the test database before each test.
+
+    Input: No test data.
+    Output: Leaves a clean schema ready for the next test case.
+    """
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     yield
 
 
 def override_get_db() -> Generator[Session, None, None]:
+    """Provides the test database session override.
+
+    Input: No direct data.
+    Output: Yields a session tied to the in-memory test database.
+    """
     db = TestSessionLocal()
     try:
         yield db
@@ -41,7 +50,11 @@ client = TestClient(app)
 
 
 def auth_headers() -> dict[str, str]:
-    """I authenticate once and return bearer token headers for protected endpoints."""
+    """Logs in once and returns bearer headers.
+
+    Input: No direct data.
+    Output: Returns an Authorization header dictionary.
+    """
     login_resp = client.post("/auth/login", json={"username": "admin", "password": "admin123"})
     assert login_resp.status_code == 200
     token = login_resp.json()["access_token"]
@@ -49,17 +62,32 @@ def auth_headers() -> dict[str, str]:
 
 
 def test_health_endpoint() -> None:
+    """Checks that the health endpoint responds cleanly.
+
+    Input: No request body is sent.
+    Output: Expects a 200 response and an ok status payload.
+    """
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
 
 
 def test_rejects_unauthorized_task_access() -> None:
+    """Checks that protected task access rejects anonymous requests.
+
+    Input: A task request without a token.
+    Output: Expects a 401 response.
+    """
     response = client.get("/tasks")
     assert response.status_code == 401
 
 
 def test_task_crud_flow() -> None:
+    """Checks the full task lifecycle.
+
+    Input: Authenticated create, list, update, and delete requests.
+    Output: Expects each step to succeed and the final list to be empty.
+    """
     headers = auth_headers()
 
     create_resp = client.post(
@@ -106,6 +134,11 @@ def test_task_crud_flow() -> None:
 
 
 def test_filter_by_status() -> None:
+    """Checks that task filtering by status works.
+
+    Input: Tasks with different statuses and one filter request.
+    Output: Expects only the matching tasks to come back.
+    """
     headers = auth_headers()
 
     client.post(
@@ -127,23 +160,43 @@ def test_filter_by_status() -> None:
 
 
 def test_validation_rejects_short_title() -> None:
+    """Checks that short task titles fail validation.
+
+    Input: A task payload with an invalid title.
+    Output: Expects a 422 response.
+    """
     headers = auth_headers()
     response = client.post("/tasks", headers=headers, json={"title": "no"})
     assert response.status_code == 422
 
 
 def test_login_rejects_bad_password() -> None:
+    """Checks that bad login credentials are rejected.
+
+    Input: The correct username with the wrong password.
+    Output: Expects a 401 response.
+    """
     response = client.post("/auth/login", json={"username": "admin", "password": "wrong-pass"})
     assert response.status_code == 401
 
 
 def test_auth_me_returns_current_user() -> None:
+    """Checks that the current user endpoint returns the token user.
+
+    Input: A valid bearer token.
+    Output: Expects the username to appear in the response.
+    """
     headers = auth_headers()
-    response = client.get("/auth/me", headers=headers)
+    response = client.get("/auth/current-user", headers=headers)
     assert response.status_code == 200
     assert response.json() == {"username": "admin"}
 
 
 def test_auth_me_rejects_invalid_token() -> None:
-    response = client.get("/auth/me", headers={"Authorization": "Bearer invalid-token"})
+    """Checks that invalid tokens are rejected by the user endpoint.
+
+    Input: A broken bearer token.
+    Output: Expects a 401 response.
+    """
+    response = client.get("/auth/current-user", headers={"Authorization": "Bearer invalid-token"})
     assert response.status_code == 401

@@ -4,9 +4,9 @@ from .db import Base
 
 
 class Task(Base):
-    """I model the `tasks` table with explicit, readable fields.
+    """Represents the `tasks` table with explicit, readable fields.
 
-    I stay intentionally small and explicit so teammates can understand the
+    It stays intentionally small and explicit so teammates can understand the
     schema quickly without chasing mixins or extra abstraction layers.
     """
 
@@ -19,7 +19,7 @@ class Task(Base):
     priority = Column(String(16), nullable=False, default="medium")
     due_date = Column(Date, nullable=True)
 
-    # I let the database generate timestamps so values stay consistent.
+    # Database-generated timestamps keep the values consistent.
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True),
