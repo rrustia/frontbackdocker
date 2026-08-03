@@ -1,4 +1,6 @@
 import os
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Response, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,10 +10,23 @@ from . import crud, models, schemas
 from .auth import authenticate_user, create_access_token, get_current_username
 from .db import Base, engine, get_db
 
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
+    """Prepares database tables during app startup.
+
+    Input: The FastAPI app instance.
+    Output: Yields control after tables are ensured.
+    """
+    Base.metadata.create_all(bind=engine)
+    yield
+
+
 app = FastAPI(
     title="TaskBoard API",
     description="A compact task-tracking API meant for Docker-first local development.",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 # Comma-separated CORS origins are normalized from env to keep deployment config simple.
@@ -25,16 +40,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-def on_startup() -> None:
-    """Creates the database tables when the app starts.
-
-    Input: No request data; it runs at startup.
-    Output: Leaves the tables ready before the API handles traffic.
-    """
-    Base.metadata.create_all(bind=engine)
 
 
 @app.get("/health")

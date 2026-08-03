@@ -60,8 +60,8 @@ The project uses the following technologies:
 
 ## 3) Default Login (Development)
 
-- Username: `admin`
-- Password: `admin123`
+- Username: `rrustia`
+- Password: `password123`
 
 The default values can be changed in `docker-compose.yml`:
 - `ADMIN_USERNAME`
@@ -100,7 +100,7 @@ Expected output:
 ```bash
 curl -X POST http://localhost:8000/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"admin123"}'
+  -d '{"username":"rrustia","password":"password123"}'
 ```
 
 Expected:
@@ -112,7 +112,7 @@ The token can be saved to a shell variable:
 ```bash
 TOKEN=$(curl -s -X POST http://localhost:8000/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"admin123"}' | jq -r .access_token)
+  -d '{"username":"rrustia","password":"password123"}' | jq -r .access_token)
 ```
 
 ### C) Current User Endpoint
@@ -123,7 +123,7 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost:8000/auth/current-user
 
 Expected output:
 - HTTP 200
-- Body includes the username (`admin`)
+- Body includes the username (`rrustia`)
 
 ### D) Unauthorized Access Should Fail
 
@@ -187,7 +187,7 @@ Expected output:
 - HTTP 200
 - `status` changed to `in_progress`
 
-### Delete Task
+### I) Delete Task
 
 Replace `1` with the task id for the task.
 
@@ -202,7 +202,7 @@ Expected:
 ### J) Web UI Test
 
 1. Open http://localhost:8080
-2. Log in with `admin` / `admin123`
+2. Log in with `rrustia` / `password123`
 3. Create a task in the form
 4. Change the status from the dropdown
 5. Filter by status
@@ -222,10 +222,20 @@ docker compose run --rm api pytest -q
 
 ### Option B: Local venv (if Docker is unavailable)
 
+macOS/Linux:
+
 ```bash
 python3 -m venv .venv
 ./.venv/bin/pip install -r api/requirements.txt
 ./.venv/bin/pytest -q api/tests
+```
+
+Windows PowerShell:
+
+```powershell
+py -m venv .venv
+.\.venv\Scripts\pip install -r api\requirements.txt
+.\.venv\Scripts\pytest -q api\tests
 ```
 
 Current test coverage includes:

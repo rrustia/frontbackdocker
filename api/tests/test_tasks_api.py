@@ -55,7 +55,7 @@ def auth_headers() -> dict[str, str]:
     Input: No direct data.
     Output: Returns an Authorization header dictionary.
     """
-    login_resp = client.post("/auth/login", json={"username": "admin", "password": "admin123"})
+    login_resp = client.post("/auth/login", json={"username": "rrustia", "password": "password123"})
     assert login_resp.status_code == 200
     token = login_resp.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
@@ -176,7 +176,7 @@ def test_login_rejects_bad_password() -> None:
     Input: The correct username with the wrong password.
     Output: Expects a 401 response.
     """
-    response = client.post("/auth/login", json={"username": "admin", "password": "wrong-pass"})
+    response = client.post("/auth/login", json={"username": "rrustia", "password": "wrong-pass"})
     assert response.status_code == 401
 
 
@@ -189,7 +189,7 @@ def test_auth_me_returns_current_user() -> None:
     headers = auth_headers()
     response = client.get("/auth/current-user", headers=headers)
     assert response.status_code == 200
-    assert response.json() == {"username": "admin"}
+    assert response.json() == {"username": "rrustia"}
 
 
 def test_auth_me_rejects_invalid_token() -> None:

@@ -12,8 +12,8 @@ JWT_ALGORITHM = "HS256"
 JWT_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "120"))
 
 # Demo credentials are read from environment variables so deployments can override quickly.
-ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "rrustia")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "password123")
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -23,7 +23,7 @@ _ADMIN_PASSWORD_HASH = pwd_context.hash(ADMIN_PASSWORD)
 
 
 def authenticate_user(username: str, password: str) -> bool:
-    """Verifies whether the submitted credentials match the admin account.
+    """Verifies whether the submitted credentials match the configured account.
 
     Input: Username and password strings.
     Output: Returns True for a valid login, otherwise False.

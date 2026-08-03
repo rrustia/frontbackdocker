@@ -31,6 +31,6 @@ jobs:
       - name: Run API tests
         env:
           JWT_SECRET_KEY: ci-test-secret
-          ADMIN_USERNAME: admin
-          ADMIN_PASSWORD: admin123
+          ADMIN_USERNAME: rrustia
+          ADMIN_PASSWORD: password123
         run: pytest -q
