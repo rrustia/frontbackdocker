@@ -67,19 +67,80 @@ The default values can be changed in `docker-compose.yml`:
 - `ADMIN_USERNAME`
 - `ADMIN_PASSWORD`
 
-## 4) Fast Start (Docker)
+## 4) Build, Start, and Stop the Project
 
-From the project root, this command starts the stack:
+Before you begin, make sure Docker is running on your machine.
+
+- macOS: start Docker Desktop, or ensure Colima is active
+- Project root: run all commands below from the repository root
+
+### Build the Docker images
+
+```bash
+docker compose build
+```
+
+This downloads the base images and builds the API and web containers for this project.
+
+### Start the app
+
+Start the full stack in the foreground:
 
 ```bash
 docker compose up --build
 ```
 
-Then open the following:
+To run it in the background instead:
+
+```bash
+docker compose up -d --build
+```
+
+After the containers are up, open:
 - API docs: http://localhost:8000/docs
 - Web app: http://localhost:8080
 
-If the Docker daemon is not running, Docker Desktop (or Colima) should be started first.
+### Check logs while running
+
+```bash
+docker compose logs -f
+```
+
+Use Ctrl+C to exit the log viewer.
+
+### Stop the app without deleting data
+
+```bash
+docker compose stop
+```
+
+This pauses the containers but keeps their state and data.
+
+### Start it again later
+
+```bash
+docker compose start
+```
+
+### Completely stop and remove the stack
+
+```bash
+docker compose down
+```
+
+This stops the containers and removes the Docker network. The PostgreSQL data volume is preserved by default, so your database remains intact for the next start.
+
+### Full reset (removes database data too)
+
+If you want to start completely fresh:
+
+```bash
+docker compose down -v --remove-orphans
+```
+
+This removes the database volume and all related data.
+
+> Tip: if you have changed code or Docker config, rebuild with `docker compose up --build` or `docker compose build` before starting again.
 
 ## 5) Beginner-Friendly Test Checklist (All Functionalities)
 
